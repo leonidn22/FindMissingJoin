@@ -24,9 +24,9 @@ files_to_process = ['C:\TFS\Branches\V6.3\Development\V6.3 [UnifiedDB]\Database\
 files_to_process = ['C:\TFS\Branches\V6.3\Development\V6.3 [UnifiedDB]\Database\DFS\Shadow\Stored Procedures\DFSPAthManipulations-sp.sql']
 files_to_process = ['C:\TFS\Branches\V6.3\Development\V6.3 [UnifiedDB]\Database\AE\Shadow\Stored Procedures\SyncDual-sp.sql']
 files_to_process = ['C:\\TFS\\Branches\\V6.3\\Development\\V6.3 [UnifiedDB]\\Database\\Pulling File Walk\\Shadow\\Stored Procedures\\DP-Logical-PullFileWalk-sp.sql']
-files_to_process = ['C:\TFS\Branches\V6.3\Development\V6.3 [UnifiedDB]\Database\Reporting\Shadow\Stored Procedures\ExecutiveReports_Shadow-sp.sql']
-files_to_process = ['C:\\\\Users\\\\lneizberg\\PycharmProjects\\SProcs\\commentTest.sql']
-process_files_from_dir = True
+files_to_process = ['C:\TFS\Branches\V6.3\Development\V6.3 [UnifiedDB]\Database\Secure Search\Shadow\Stored Procedures\RulePrepare-sp.sql']
+#files_to_process = ['C:\\\\Users\\\\lneizberg\\PycharmProjects\\SProcs\\commentTest.sql']
+process_files_from_dir = False
 ext = 'sql'
 
 tableList = 'C:\\Users\\lneizberg\\PycharmProjects\\SProcs\\tableList.txt'
