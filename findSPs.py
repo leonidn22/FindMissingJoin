@@ -24,7 +24,9 @@ files_to_process = ['C:\TFS\Branches\V6.3\Development\V6.3 [UnifiedDB]\Database\
 files_to_process = ['C:\TFS\Branches\V6.3\Development\V6.3 [UnifiedDB]\Database\DFS\Shadow\Stored Procedures\DFSPAthManipulations-sp.sql']
 files_to_process = ['C:\TFS\Branches\V6.3\Development\V6.3 [UnifiedDB]\Database\AE\Shadow\Stored Procedures\SyncDual-sp.sql']
 files_to_process = ['C:\\TFS\\Branches\\V6.3\\Development\\V6.3 [UnifiedDB]\\Database\\Pulling File Walk\\Shadow\\Stored Procedures\\DP-Logical-PullFileWalk-sp.sql']
-files_to_process = ['C:\TFS\Branches\V6.3\Development\V6.3 [UnifiedDB]\Database\Secure Search\Shadow\Stored Procedures\RulePrepare-sp.sql']
+files_to_process = ['C:\TFS\Branches\V6.3\Development\V6.3 [UnifiedDB]\Database\SDT\Shadow\Stored Procedures\SDT-funcs.sql']
+files_to_process = ['C:\TFS\Branches\V6.3\Development\V6.3 [UnifiedDB]\Database\Secure Migration\Shadow\Stored Procedures\RulePrepare-sp.sql']
+#files_to_process = ['C:\TFS\Branches\V6.3\Development\V6.3 [UnifiedDB]\Database\SDT\Shadow\Stored Procedures\Permissions-sp.sql']
 #files_to_process = ['C:\\\\Users\\\\lneizberg\\PycharmProjects\\SProcs\\commentTest.sql']
 process_files_from_dir = False
 ext = 'sql'
@@ -97,6 +99,7 @@ def findSpsByFile():
             # table_regex = '.*(from|join|left join).{0,12}'+table+' .{0,12}?(?P<alias>[a-zA-Z0-9_]+)'
             # find lines with alias at the end of line or long lines with table in the middle
             table_regex = r'.*( |from|join|left join){0,12}(?<!#)(\s|\.)[[]?'+table+'[]]?( as | |\)){1,12}(?P<alias>[a-zA-Z0-9_]+)'
+            # table_regex = r'.*( |from|join|left join){0,12}(?<!#)(\s|\.)[[]?'+table+'[]]?( as | |\)){1,12}(?P<alias>[a-zA-Z0-9_]+)'
             # table_regex = r'.*(from|join|left join){0,1}( |dbo\.){1,12}(?<!#)[[]?'+table+'[]]?( as | |\)){1,12}(?P<alias>[a-zA-Z0-9_]+)'
             # find if string empty after the table or alias
             # save  table_regex = r'.*(from|join|left join).{1,12}[^#][[]?'+table+'[]]?( as | |\))?(?P<alias>[a-zA-Z0-9_]+)'
@@ -156,10 +159,12 @@ def findSpsByFile():
                         if table.lower() in ('shares', 'tmp_shares', 'filers'):
                             join_field = 'filer_id'
                         if alias != '':
-                            alias_regex1 = '.*(and|where) '+alias+'.'+join_field+' {0,1}='
+                            alias_regex1 = '.*(and|where|on) '+alias+'\.'+join_field+' {0,1}='
+                            alias_regex1 = '.*(and|where|on) '+'('+alias+'\.'+'|'+table+'\.'+')'+join_field+' {0,1}='
+                            # alias_regex1 = '.*(and|where|on) ('+alias+'\.'+'|'+table+'\.'+'){0,1}'+join_field+' {0,1}='
                             alias_regex2 = '.*= '+alias+'\.'+join_field+' '
                         else:
-                            alias_regex1 = '.*(and|where) ('+alias+'|'+table+'\.'+'){0,1}'+join_field+' {0,1}='
+                            alias_regex1 = '.*(and|where|on) ('+alias+'|'+table+'\.'+'){0,1}'+join_field+' {0,1}='
                             #alias_regex1 = '.*(and|where) ['+table+'\.'+']{0,1}'+join_field+' {0,1}='
                             alias_regex2 = '.*= '+alias+''+join_field+' '
                         pattern_join1 = re.compile(alias_regex1, re.IGNORECASE)
@@ -169,8 +174,8 @@ def findSpsByFile():
                             #print ('Detected join %s' %line_join)
                             detected = True
                             break
-                    if not detected:
-                        lines_dict[idx] = alias
+                    if not detected and table != '':
+                        lines_dict[idx] = alias + '; table - ' + table
                         count_to_fix = count_to_fix + 1
         # print result for each file
         for idx, alias in sorted(lines_dict.items(), key=itemgetter(0)):

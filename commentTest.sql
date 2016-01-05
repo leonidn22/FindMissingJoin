@@ -1,3 +1,18 @@
+else if @type in ('unix', 'emc', 'ntap', 'ntap_cm', 'nss') and ( charindex('//',@path) = 1 )	-- UNIXsupport full path. For unix share_name = share_path
+
+IF @@ROWCOUNT > 0 -->> Note, proc can be called for other tables (e.g. SortedDirectoryTree). In case table exists in Hist__Archive then try to override filter in @Hist_CK_def with definition taken from sys.check_constraints
+
+SELECT
+			dirid,
+			AclPermParentID,AclUnique,
+			CASE
+				WHEN AclUnique in (1,2) THEN 0
+				WHEN aclPermParentID=ParentID THEN 1
+				ELSE 2
+			END as IL
+		FROM dbo.SortedDirectoryTree
+		WHERE posixmode=0 and entType=1
+
 (SELECT relations.ChildDirID AS DirID FROM SDT_DerivedRelations relations
 					INNER JOIN SortedDirectoryTree sdt ON sdt.DirID = relations.ChildDirID AND sdt.' + dbo.fncGetProtectedColumn(@Set) + ' = 1
 													  and sdt.FilerID = @FilerID
