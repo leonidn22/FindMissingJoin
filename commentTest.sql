@@ -1,7 +1,39 @@
+				FROM ' + @sqlFrom + N'
+				INNER JOIN SDT_AccessPaths aPath ON aPath.DirID = dirTree.DirID
+				and aPathath.FilerID = dirTree.FilerID and aPath.FilerID =' +  @FilerID_chr + '
+
+
+		 left join dbo.Shares as TMP
+			on probShares.share_id = TMP.share_id
+			and TMP.filer_id = '+@FilerID_chr+'
+
+		from TacticalErrors err
+		inner join [VrnsDomainDB].[dbo].[AD_SidIDs] adSids ON err.userSidID = adSids.sidID
+		left join [VrnsDomainDB].[dbo].ActiveDirectory_users_and_groups adUsers on adUsers.SidID = err.userSidID
+		inner join [VrnsDomainDB].[dbo].Domains dm on  adSids.Domain_ID=dm.DomainID
+		inner join [vrnsDomainDB].dbo.filers on filer_id = '+cast (@FilerID as varchar)+'
+		INNER JOIN [VrnsDomainDB].[dbo].vwRep_GetFilerLicenseStatus_ByPlaformAndMainCounters flc
+			ON flc.FilerId = filers.Filer_ID AND flc.FilerExpirationStatus & 0x1 = 0
+		WHERE err.FilerID = '+cast(@FilerID as varchar)+'
+
+
 else if @type in ('unix', 'emc', 'ntap', 'ntap_cm', 'nss') and ( charindex('//',@path) = 1 )	-- UNIXsupport full path. For unix share_name = share_path
 
 IF @@ROWCOUNT > 0 -->> Note, proc can be called for other tables (e.g. SortedDirectoryTree). In case table exists in Hist__Archive then try to override filter in @Hist_CK_def with definition taken from sys.check_constraints
 
+
+				SELECT shares.Share_ID,shares.share_DirID,shares.share_netname,acls.AceSidID,acls.AceType,acls.AceMask
+				-- FROM  dbo.shareAcls acls
+				INNER JOIN shares
+					ON shares.share_id = acls.share_id
+
+
+				INNER JOIN (
+					SELECT RoleID,RoleName from dbo.SP_UniqueRoles
+						UNION ALL
+					SELECT RoleID,RoleName FROM dbo.pv_Hist_SP_UniqueRoles
+				) roles
+					ON roles.RoleID = CAST( AceMasks.ParamValue AS INT)
 SELECT
 			dirid,
 			AclPermParentID,AclUnique,
@@ -24,7 +56,7 @@ SELECT
 
 UPDATE SP_UniqueRoles SET RoleIDInSite = @RoleIDInSite WHERE DirID = @SiteID AND RoleName = @RoleName and FilerID = @FilerID
 
-inner join [vrnsDomainDB].dbo.filers f on f.filer_ID = e.FilerID and f.filer_id=@filerID
+inner join [vrnsDomainDB].dbo.filers f on f.filer_ID = e.FilerID
 
 RETURN (select auth.sidID
 		FROM SDT_DerivedRelations dr
@@ -86,14 +118,14 @@ GO
 		set flags = flags | 0x2
 		from TMP_SortedDirectoryTree sdt WITH(TABLOCKX,HOLDLOCK)
 		inner join SP_SiteCollections WITH(TABLOCKX,HOLDLOCK) on TMP_shares.share_DirID = sdt.DirID
-		where sdt.FilerID = @FilerID and SP_SiteCollections.FilerID = @FilerID
+		where sdt.FilerID = @FilerID
 
 	--Update share road
 	update sdt
 		set flags = flags | 0x4
 		from TMP_SortedDirectoryTree sdt WITH(TABLOCKX,HOLDLOCK)
 		inner join TMP_SDT_DerivedRelations dr WITH(TABLOCKX,HOLDLOCK) on dr.DirID = sdt.DirID AND dr.FilerID = sdt.FilerID
-		inner join TMP_shares WITH(TABLOCKX,HOLDLOCK) on TMP_shares.share_DirID = dr.ChildDirID AND TMP_shares.filer_id = dr.FilerID
+		inner join TMP_shares WITH(TABLOCKX,HOLDLOCK) on TMP_shares.share_DirID = dr.ChildDirID
 		where sdt.FilerID = @FilerID
 GO
 
